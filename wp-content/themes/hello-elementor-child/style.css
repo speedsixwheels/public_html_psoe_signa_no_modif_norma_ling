@@ -35,4 +35,28 @@ Updated: 2026-03-28 07:44:57
     background-color: #b83d36 !important;
 }
 
+/* PDF Download Button */
+.btn-descargar-pdf {
+    display: inline-block !important;
+    background-color: #2980b9 !important;
+    color: white !important;
+    padding: 12px 24px !important;
+    text-decoration: none !important;
+    border-radius: 5px !important;
+    font-weight: bold !important;
+    transition: background-color 0.3s ease !important;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.btn-descargar-pdf:hover {
+    background-color: #21618c !important;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    transform: translateY(-2px);
+    transition: all 0.3s ease;
+}
+
+.btn-descargar-pdf:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
 
