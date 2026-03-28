@@ -11,3 +11,44 @@ Updated: 2026-03-28 07:44:57
 
 */
 
+/* Gravity Forms submit button styles */
+.gform_wrapper .gform_footer input[type=submit],
+.gform_wrapper .gform_footer button[type=submit],
+.gform_wrapper .gform_footer input.gform_button,
+.gform_wrapper .gform_footer button.gform_button {
+    width: 100% !important;
+    background-color: #D04840 !important;
+    color: #ffffff !important;
+    border: none !important;
+    padding: 12px !important;
+    font-size: 16px !important;
+    cursor: pointer !important;
+    border-radius: 4px;
+    transition: background-color 0.3s ease;
+}
+
+/* Hover effect for submit button */
+.gform_wrapper .gform_footer input[type=submit]:hover,
+.gform_wrapper .gform_footer button[type=submit]:hover,
+.gform_wrapper .gform_footer input.gform_button:hover,
+.gform_wrapper .gform_footer button.gform_button:hover {
+    background-color: #b83d36 !important;
+}
+
+
+.ginput_container.ginput_container_signature {
+    width: 100% !important;
+    max-width: 100% !important;
+}
+
+.ginput_container.ginput_container_signature canvas {
+    width: 100% !important;
+    max-width: 100% !important;
+}
+.gfield--type-signature,
+.gfield--type-signature .ginput_container,
+.gfield--type-signature .signing-container,
+.gfield--type-signature canvas {
+    width: 100% !important;
+    max-width: 100% !important;
+}

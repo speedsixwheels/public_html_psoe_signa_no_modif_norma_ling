@@ -22,3 +22,15 @@ endif;
 add_action( 'wp_enqueue_scripts', 'child_theme_configurator_css', 10 );
 
 // END ENQUEUE PARENT ACTION
+
+
+function pre($data){
+	echo '<pre>';
+	print_r($data);
+	echo '</pre>';
+}
+
+
+get_template_part( 'components/shortcodes/gravity/1/index'); 
+get_template_part( 'components/functions/gravity/index' ); 
+get_template_part( 'components/hooks/gravity/1/index'); 
