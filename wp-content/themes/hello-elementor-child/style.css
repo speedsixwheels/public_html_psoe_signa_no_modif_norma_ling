@@ -36,19 +36,3 @@ Updated: 2026-03-28 07:44:57
 }
 
 
-.ginput_container.ginput_container_signature {
-    width: 100% !important;
-    max-width: 100% !important;
-}
-
-.ginput_container.ginput_container_signature canvas {
-    width: 100% !important;
-    max-width: 100% !important;
-}
-.gfield--type-signature,
-.gfield--type-signature .ginput_container,
-.gfield--type-signature .signing-container,
-.gfield--type-signature canvas {
-    width: 100% !important;
-    max-width: 100% !important;
-}
