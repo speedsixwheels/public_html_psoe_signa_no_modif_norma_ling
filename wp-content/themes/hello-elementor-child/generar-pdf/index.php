@@ -120,6 +120,7 @@ $num = 0;
 
 // Recorrer todos los registros
 foreach ($records as $record) {
+   
     $num++;
     $pdf->SetX(10);
 
@@ -133,11 +134,12 @@ foreach ($records as $record) {
     $signature_file = $record['Signatura'] ?? '';
     $full_signature_path = '';
 
-    pre($signature_file);
-    die();
+  
     
     if (!empty($signature_file) && !empty($entry_id)) {
         $full_signature_path = 'https://signa.psoevinaros.com/wp-content/uploads/gravity_forms/' . $signature_file;
+        pre($full_signature_path);
+        die();
     }
 
     // Guardamos posición Y de la fila
