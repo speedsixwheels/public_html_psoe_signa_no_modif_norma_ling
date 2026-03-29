@@ -10,7 +10,7 @@ ini_set('display_errors', 1);
 
 require_once '/home/u937561055/domains/psoevinaros.com/public_html/signa.psoevinaros.com/wp-load.php';
 
-header('Content-Type: application/json; charset=utf-8');
+
 
 $form_id = isset($_POST['form_id']) ? intval($_POST['form_id']) : 1;
 $meses   = isset($_POST['meses']) ? intval($_POST['meses']) : 12;
@@ -64,28 +64,43 @@ $sorting = [
     'direction' => 'DESC',
 ];
 
-$paging = [
-    'offset'    => 0,
-    'page_size' => 100,
-];
-
+$page_size = 200; // Tamaño de página para cada petición
+$offset = 0;
 $total_count = 0;
+$all_entries = [];
 
-// 6. Obtener entradas
-$entries = GFAPI::get_entries($form_id, $search_criteria, $sorting, $paging, $total_count);
-
-if (is_wp_error($entries)) {
-    http_response_code(500);
-
-    $out = [
-        'status'  => 'error',
-        'message' => 'Error al obtener las entradas: ' . $entries->get_error_message(),
-        'form_id' => $form_id,
+// 6. Obtener todas las entradas mediante paginación
+do {
+    $paging = [
+        'offset'    => $offset,
+        'page_size' => $page_size,
     ];
 
-    echo json_encode($out, JSON_UNESCAPED_UNICODE);
-    exit;
-}
+    $entries = GFAPI::get_entries($form_id, $search_criteria, $sorting, $paging, $total_count);
+
+    if (is_wp_error($entries)) {
+        http_response_code(500);
+
+        $out = [
+            'status'  => 'error',
+            'message' => 'Error al obtener las entradas: ' . $entries->get_error_message(),
+            'form_id' => $form_id,
+        ];
+
+        echo json_encode($out, JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+
+    if (!empty($entries)) {
+        $all_entries = array_merge($all_entries, $entries);
+        $offset += $page_size;
+    }
+
+    // Continuar mientras haya más entradas por obtener
+} while (!empty($entries) && count($all_entries) < $total_count);
+
+// Usar todas las entradas obtenidas
+$entries = $all_entries;
 
 if (empty($entries)) {
     $out = [
@@ -99,6 +114,8 @@ if (empty($entries)) {
     echo json_encode($out, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     exit;
 }
+
+
 
 // 7. Crear mapeos generales de campos
 $field_ids = [];
@@ -160,16 +177,6 @@ foreach ($entries as $i => $entry) {
         }
     }
 
-    // Link detalle
-    $registro_entrada = isset($data['registro_entrada']) ? $data['registro_entrada'] : '';
-    $link = 'https://control.speedsixwheels.com/sat-details/?form_id=' . urlencode($form_id)
-          . '&entry_id=' . urlencode($data['entry_id']);
-
-    if ($registro_entrada !== '') {
-        $link .= '&registro_entrada=' . urlencode($registro_entrada);
-    }
-
-    $data['link'] = '<a class="btn btn-primary" href="' . $link . '">Más</a>';
 
     // Mapeos útiles
     $data['fields_labels_id'] = $fields_labels_id;
@@ -222,7 +229,7 @@ $out = [
     'fields_labels_id' => $fields_labels_id,
     'records'          => $array_entries,
 ];
-
+header('Content-Type: application/json; charset=utf-8');
 echo json_encode($out, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 exit;
 ?>

@@ -1,166 +1,243 @@
 <?php
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
+
 require_once '/home/u937561055/domains/psoevinaros.com/public_html/signa.psoevinaros.com/wp-load.php';
-require_once $_SERVER['DOCUMENT_ROOT'] . '/wp-content/themes/hello-elementor-child/assets/fpdf/fpdf.php';
+require_once ABSPATH . 'wp-content/themes/hello-elementor-child/assets/fpdf/fpdf.php';
 
+$url = 'https://signa.psoevinaros.com/api/get-data/form/';
+$post_fields = [
+    'form_id' => 1,
+    'meses'   => 12,
+];
 
- $url = 'https://signa.psoevinaros.com/api/get-data/form/';
-        $post_fields = [
-            'form_id' => 1,
-            'meses' => 12,
-        ];
+$data_form = get_data_curl($url, $post_fields);
+$records = $data_form['records'] ?? [];
 
-        
-        $data_form = get_data_curl($url,$post_fields);
-
-        $records = $data_form['records'] ?? [];
-        if (empty($records)) {
-            die('No se encontraron registros para generar el PDF.');
-        }
-
-
-
-/**
- * Convierte UTF-8 a ISO-8859-1/Windows-1252 para FPDF clásico
- */
-function pdf_text($text) {
-    return iconv('UTF-8', 'windows-1252//TRANSLIT', $text);
+if (empty($records)) {
+    die('No se encontraron registros para generar el PDF.');
 }
 
-       
-/**
- * Rutas
- */
-$logo_path = $_SERVER['DOCUMENT_ROOT'] . '/wp-content/uploads/2026/03/logo_psoevinaros_red_180x.png'; // tu logo
-$signature_path = $_SERVER['DOCUMENT_ROOT'] . '/wp-content/uploads/gravity_forms/signatures/'; // ruta real de la firma
+function pdf_text($text) {
+    return iconv('UTF-8', 'windows-1252//TRANSLIT', (string)$text);
+}
+
+$logo_path = ABSPATH . 'wp-content/uploads/2026/03/logo_psoevinaros_red_180x.png';
+$total_firmas = count($records);
 
 class MiPDF extends FPDF
 {
-    public $record;
     public $logo_path;
+    public $total_firmas = 0;
 
     function Header()
     {
-        // Fondo claro opcional
         $this->SetFillColor(245, 245, 245);
         $this->Rect(0, 0, 210, 297, 'F');
 
-        // Logo
         if (!empty($this->logo_path) && file_exists($this->logo_path)) {
             $this->Image($this->logo_path, 12, 12, 32);
         }
 
-        // Línea vertical decorativa
         $this->SetDrawColor(120, 120, 120);
         $this->SetLineWidth(0.4);
         $this->Line(50, 12, 50, 46);
 
-        // Título
         $this->SetXY(55, 10);
         $this->SetTextColor(210, 0, 0);
         $this->SetFont('Arial', 'B', 19);
-        $this->MultiCell(140, 10, pdf_text("NO VOLEM LA MODIFICACIÓ DEL\nREGLAMENT DE NORMALITZACIÓ\nLINGÜÍSTICA"), 0, 'C');
+        $this->MultiCell(
+            140,
+            10,
+            pdf_text("NO VOLEM LA MODIFICACIÓ DEL\nREGLAMENT DE NORMALITZACIÓ\nLINGÜÍSTICA"),
+            0,
+            'C'
+        );
 
-        // Subtítulo
         $this->Ln(2);
         $this->SetTextColor(110, 110, 110);
         $this->SetFont('Arial', '', 11);
         $this->Cell(0, 6, pdf_text('Recollida de firmes ciutadanes · Vinaròs PSOE'), 0, 1, 'C');
 
-        $this->Ln(6);
+        // Solo en la primera página: total de firmas
+        if ($this->PageNo() == 1) {
+            $this->Ln(2);
+            $this->SetFont('Arial', 'B', 11);
+            $this->SetTextColor(70, 70, 70);
+            $this->Cell(
+                0,
+                7,
+                pdf_text('Total de firmes recollides: ' . $this->total_firmas),
+                0,
+                1,
+                'L'
+            );
+            $this->Ln(3);
+        } else {
+            $this->Ln(6);
+        }
 
-        // Cabecera tabla
         $this->SetX(10);
         $this->SetFillColor(220, 0, 0);
         $this->SetTextColor(255, 255, 255);
         $this->SetDrawColor(180, 180, 180);
         $this->SetFont('Arial', 'B', 11);
 
-        $this->Cell(12, 14, 'Nº', 1, 0, 'C', true);
+        $this->Cell(12, 14, 'N', 1, 0, 'C', true);
         $this->Cell(38, 14, pdf_text('Nom'), 1, 0, 'C', true);
-        $this->Cell(52, 14, pdf_text('Cognoms'), 1, 0, 'C', true);
+        $this->Cell(42, 14, pdf_text('Cognoms'), 1, 0, 'C', true);
         $this->Cell(32, 14, 'DNI', 1, 0, 'C', true);
-        $this->Cell(56, 14, pdf_text('Firma'), 1, 1, 'C', true);
+        $this->Cell(66, 14, pdf_text('Firma'), 1, 1, 'C', true);
     }
 
     function Footer()
     {
-        $this->SetY(-22);
+        $this->SetY(-24);
+
         $this->SetTextColor(130, 130, 130);
         $this->SetFont('Arial', 'I', 8.5);
-        $this->Cell(
+        $this->MultiCell(
             0,
-            5,
+            4.5,
             pdf_text("Les dades recollides seran tractades de conformitat amb el RGPD i s'utilitzaran exclusivament per als fins polítics del PSPV-PSOE de Vinaròs."),
             0,
-            1,
             'L'
         );
 
-       
+        $this->Ln(1);
+        $this->SetFont('Arial', '', 8.5);
+        $this->Cell(
+            0,
+            5,
+            pdf_text('Pàgina ' . $this->PageNo() . ' de {nb}'),
+            0,
+            0,
+            'R'
+        );
     }
 }
 
 $pdf = new MiPDF('P', 'mm', 'A4');
+$pdf->AliasNbPages();
 $pdf->logo_path = $logo_path;
+$pdf->total_firmas = $total_firmas;
 $pdf->SetMargins(10, 10, 10);
 $pdf->SetAutoPageBreak(true, 28);
 $pdf->AddPage();
 
-/**
- * Dibujar filas con todos los registros
- */
 $pdf->SetFont('Arial', '', 11);
 $pdf->SetTextColor(70, 70, 70);
 $pdf->SetDrawColor(190, 190, 190);
 
 $rowHeight = 11.5;
 $num = 0;
+$signature_errors = [];
 
-// Recorrer todos los registros
 foreach ($records as $record) {
-   
     $num++;
-    $pdf->SetX(10);
 
-    // Extraer datos del registro
-    $nom = $record['nom'] ?? '';
-    $cognoms = trim(($record['Primer Cognom'] ?? '') . ' ' . ($record['Segon Cognom'] ?? ''));
-    $dni = $record['Dni'] ?? '';
-    
-    // Construir ruta completa de la firma
-    $entry_id = $record['entry_id'] ?? '';
-    $signature_file = $record['Signatura'] ?? '';
-    $full_signature_path = '';
+    $nom             = $record['nom'] ?? '';
+    $cognoms         = trim(($record['Primer Cognom'] ?? '') . ' ' . ($record['Segon Cognom'] ?? ''));
+    $dni             = strtoupper($record['Dni'] ?? '');
+    $signature_value = trim($record['Signatura'] ?? '');
 
-  
-    
-    if (!empty($signature_file) && !empty($entry_id)) {
-        $full_signature_path = 'https://signa.psoevinaros.com/wp-content/uploads/gravity_forms/' . $signature_file;
-        pre($full_signature_path);
-        die();
+    $signature_img = '';
+    if (!empty($signature_value)) {
+        $signature_img = ABSPATH . 'wp-content/uploads/gravity_forms/signatures/' . $signature_value;
     }
 
-    // Guardamos posición Y de la fila
+    $x = 10;
     $y = $pdf->GetY();
 
-    // Celdas
+    if ($y + $rowHeight > ($pdf->GetPageHeight() - 28)) {
+        $pdf->AddPage();
+        $y = $pdf->GetY();
+    }
+
+    $pdf->SetX($x);
+
     $pdf->Cell(12, $rowHeight, $num, 1, 0, 'C');
     $pdf->Cell(38, $rowHeight, pdf_text($nom), 1, 0, 'L');
-    $pdf->Cell(52, $rowHeight, pdf_text($cognoms), 1, 0, 'L');
+    $pdf->Cell(42, $rowHeight, pdf_text($cognoms), 1, 0, 'L');
     $pdf->Cell(32, $rowHeight, pdf_text($dni), 1, 0, 'C');
-    $pdf->Cell(56, $rowHeight, '', 1, 1, 'C');
 
-    // Insertar firma dentro de la última celda si existe
-     if (!empty($full_signature_path)) {
-        // Intentar obtener la imagen
-        $temp_file = download_url($full_signature_path);
-        if (!is_wp_error($temp_file) && file_exists($temp_file)) {
-            $pdf->Image($temp_file, 136, $y + 1.2, 48, 9);
-            @unlink($temp_file); // Eliminar archivo temporal
+    $firma_x = $pdf->GetX();
+    $firma_y = $pdf->GetY();
+    $cell_w  = 66;
+    $cell_h  = $rowHeight;
+
+    $pdf->Cell($cell_w, $cell_h, '', 1, 0, 'C');
+
+    if (!empty($signature_img) && file_exists($signature_img)) {
+        try {
+            $img_info = @getimagesize($signature_img);
+
+            if ($img_info !== false) {
+                $img_w_orig = $img_info[0];
+                $img_h_orig = $img_info[1];
+
+                if ($img_w_orig > 0 && $img_h_orig > 0) {
+                    $max_h = $cell_h - 3;
+                    $max_w = $cell_w - 4;
+
+                    $ratio = $img_w_orig / $img_h_orig;
+
+                    $img_w = $max_w;
+                    $img_h = $img_w / $ratio;
+
+                    if ($img_h > $max_h) {
+                        $img_h = $max_h;
+                        $img_w = $img_h * $ratio;
+                    }
+
+                    $x_img = $firma_x + (($cell_w - $img_w) / 2);
+                    $y_img = $firma_y + (($cell_h - $img_h) / 2);
+
+                    $pdf->Image($signature_img, $x_img, $y_img, $img_w, $img_h);
+                } else {
+                    $signature_errors[] = [
+                        'entry_id' => $record['entry_id'] ?? null,
+                        'num'      => $num,
+                        'file'     => $signature_value,
+                        'path'     => $signature_img,
+                        'reason'   => 'Dimensiones de imagen no válidas',
+                    ];
+                }
+            } else {
+                $signature_errors[] = [
+                    'entry_id' => $record['entry_id'] ?? null,
+                    'num'      => $num,
+                    'file'     => $signature_value,
+                    'path'     => $signature_img,
+                    'reason'   => 'No se pudo leer el tamaño de la imagen',
+                ];
+            }
+        } catch (Exception $e) {
+            $signature_errors[] = [
+                'entry_id' => $record['entry_id'] ?? null,
+                'num'      => $num,
+                'file'     => $signature_value,
+                'path'     => $signature_img,
+                'error'    => $e->getMessage(),
+            ];
         }
-    } 
+    } else {
+        $signature_errors[] = [
+            'entry_id' => $record['entry_id'] ?? null,
+            'num'      => $num,
+            'file'     => $signature_value,
+            'path'     => $signature_img,
+            'exists'   => !empty($signature_img) ? file_exists($signature_img) : false,
+            'reason'   => empty($signature_value) ? 'Campo Signatura vacío' : 'Archivo no encontrado',
+        ];
+    }
+
+    $pdf->Ln($rowHeight);
+}
+
+if (!empty($signature_errors)) {
+    $log_file = ABSPATH . 'wp-content/uploads/signature_errors_' . date('Y-m-d_His') . '.json';
+    file_put_contents($log_file, json_encode($signature_errors, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
 }
 
 $filename = 'recollida_firmes_' . date('Y-m-d_His') . '.pdf';
