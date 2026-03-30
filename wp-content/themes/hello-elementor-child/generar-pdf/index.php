@@ -8,11 +8,11 @@ require_once ABSPATH . 'wp-content/themes/hello-elementor-child/assets/fpdf/fpdf
 $url = 'https://signa.psoevinaros.com/api/get-data/form/';
 $post_fields = [
     'form_id' => 1,
-    'meses'   => 12,
 ];
 
 $data_form = get_data_curl($url, $post_fields);
 $records = $data_form['records'] ?? [];
+
 
 if (empty($records)) {
     die('No se encontraron registros para generar el PDF.');
@@ -23,11 +23,13 @@ function pdf_text($text) {
 }
 
 $logo_path = ABSPATH . 'wp-content/uploads/2026/03/logo_psoevinaros_red_180x.png';
+$logo_path_2 = ABSPATH . 'wp-content/uploads/2026/03/logo_compromis.png'; 
 $total_firmas = count($records);
 
 class MiPDF extends FPDF
 {
     public $logo_path;
+    public $logo_path_2;
     public $total_firmas = 0;
 
     function Header()
@@ -37,6 +39,10 @@ class MiPDF extends FPDF
 
         if (!empty($this->logo_path) && file_exists($this->logo_path)) {
             $this->Image($this->logo_path, 12, 12, 32);
+        }
+
+        if (!empty($this->logo_path_2) && file_exists($this->logo_path_2)) {
+            $this->Image($this->logo_path_2, 12, 28, 32);
         }
 
         $this->SetDrawColor(120, 120, 120);
@@ -99,7 +105,7 @@ class MiPDF extends FPDF
         $this->MultiCell(
             0,
             4.5,
-            pdf_text("Les dades recollides seran tractades de conformitat amb el RGPD i s'utilitzaran exclusivament per als fins polítics del PSPV-PSOE de Vinaròs."),
+            pdf_text("Una iniciativa del PSPV Vinaròs i Compromís."),
             0,
             'L'
         );
@@ -120,6 +126,7 @@ class MiPDF extends FPDF
 $pdf = new MiPDF('P', 'mm', 'A4');
 $pdf->AliasNbPages();
 $pdf->logo_path = $logo_path;
+$pdf->logo_path_2 = $logo_path_2;
 $pdf->total_firmas = $total_firmas;
 $pdf->SetMargins(10, 10, 10);
 $pdf->SetAutoPageBreak(true, 28);
