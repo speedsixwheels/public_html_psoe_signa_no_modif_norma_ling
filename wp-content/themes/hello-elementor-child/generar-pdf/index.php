@@ -63,7 +63,7 @@ class MiPDF extends FPDF
         $this->Ln(2);
         $this->SetTextColor(110, 110, 110);
         $this->SetFont('Arial', '', 11);
-        $this->Cell(0, 6, pdf_text('Recollida de firmes ciutadanes · Vinaròs PSOE'), 0, 1, 'C');
+        $this->Cell(0, 6, pdf_text('Recollida de firmes ciutadanes · PSPV Vinaròs - Compromís'), 0, 1, 'C');
 
         // Solo en la primera página: total de firmas
         if ($this->PageNo() == 1) {
