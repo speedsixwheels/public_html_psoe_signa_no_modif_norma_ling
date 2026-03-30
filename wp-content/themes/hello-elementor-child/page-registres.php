@@ -149,12 +149,12 @@ get_header();
                 // Preparar datos para DataTables
                 $tableData = [];
                 foreach ($records as $record) {
-                    $nom = $record['nom'] ?? '';
-                    $primerCognom = $record['Primer Cognom'] ?? '';
-                    $segonCognom = $record['Segon Cognom'] ?? '';
-                    $dni = $record['Dni'] ?? '';
-                    $signatura = $record['Signatura'] ?? '';
-                    $fecha = $record['fecha'] ?? '';
+                    $nom = ucfirst(strtolower(trim($record['nom'] ?? '')));
+                    $primerCognom = ucfirst(strtolower(trim($record['Primer Cognom'] ?? '')));
+                    $segonCognom = ucfirst(strtolower(trim($record['Segon Cognom'] ?? '')));
+                    $dni = strtoupper(trim($record['Dni'] ?? ''));
+                    $signatura = trim($record['Signatura'] ?? '');
+                    $fecha = trim($record['fecha'] ?? '');
                     
                     // Formatear fecha a dd/mm/yy H:i:s
                     $fechaFormateada = '';

@@ -143,9 +143,9 @@ $signature_errors = [];
 foreach ($records as $record) {
     $num++;
 
-    $nom             = $record['nom'] ?? '';
-    $cognoms         = trim(($record['Primer Cognom'] ?? '') . ' ' . ($record['Segon Cognom'] ?? ''));
-    $dni             = strtoupper($record['Dni'] ?? '');
+    $nom             = ucfirst(strtolower(trim($record['nom'] ?? '')));
+    $cognoms         = trim(ucfirst(strtolower($record['Primer Cognom'] ?? '')) . ' ' . ucfirst(strtolower($record['Segon Cognom'] ?? '')));
+    $dni             = strtoupper(trim($record['Dni'] ?? ''));
     $signature_value = trim($record['Signatura'] ?? '');
 
     $signature_img = '';
