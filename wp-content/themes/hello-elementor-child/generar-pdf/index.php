@@ -143,8 +143,8 @@ $signature_errors = [];
 foreach ($records as $record) {
     $num++;
 
-    $nom             = ucfirst(strtolower(trim($record['nom'] ?? '')));
-    $cognoms         = trim(ucfirst(strtolower($record['Primer Cognom'] ?? '')) . ' ' . ucfirst(strtolower($record['Segon Cognom'] ?? '')));
+    $nom             = ucfirst(mb_strtolower(trim($record['nom'] ?? '')));
+    $cognoms         = trim(ucfirst(mb_strtolower($record['Primer Cognom'] ?? '')) . ' ' . ucfirst(mb_strtolower($record['Segon Cognom'] ?? '')));
     $dni             = strtoupper(trim($record['Dni'] ?? ''));
     $signature_value = trim($record['Signatura'] ?? '');
 

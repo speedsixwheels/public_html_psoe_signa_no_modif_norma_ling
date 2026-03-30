@@ -161,9 +161,9 @@ get_header();
                 // Preparar datos para DataTables
                 $tableData = [];
                 foreach ($records as $record) {
-                    $nom = ucfirst(strtolower(trim($record['nom'] ?? '')));
-                    $primerCognom = ucfirst(strtolower(trim($record['Primer Cognom'] ?? '')));
-                    $segonCognom = ucfirst(strtolower(trim($record['Segon Cognom'] ?? '')));
+                    $nom = ucfirst(mb_strtolower(trim($record['nom'] ?? '')));
+                    $primerCognom = ucfirst(mb_strtolower(trim($record['Primer Cognom'] ?? '')));
+                    $segonCognom = ucfirst(mb_strtolower(trim($record['Segon Cognom'] ?? '')));
                     $dni = strtoupper(trim($record['Dni'] ?? ''));
                     $signatura = trim($record['Signatura'] ?? '');
                     $fecha = trim($record['fecha'] ?? '');  //sumar 2 horas a la fecha original para mostrarla en la tabla
