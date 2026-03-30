@@ -34,7 +34,7 @@ class MiPDF extends FPDF
 
     function Header()
     {
-        $this->SetFillColor(245, 245, 245);
+        $this->SetFillColor(255, 255, 255);
         $this->Rect(0, 0, 210, 297, 'F');
 
         if (!empty($this->logo_path) && file_exists($this->logo_path)) {
