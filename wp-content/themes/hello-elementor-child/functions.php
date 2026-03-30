@@ -24,6 +24,8 @@ add_action( 'wp_enqueue_scripts', 'child_theme_configurator_css', 10 );
 // END ENQUEUE PARENT ACTION
 
 
+date_default_timezone_set('Europe/Madrid');
+
 function pre($data){
 	echo '<pre>';
 	print_r($data);

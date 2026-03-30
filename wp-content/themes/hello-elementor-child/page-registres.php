@@ -129,10 +129,21 @@ get_header();
             [Signatura] => 69c7d6e220fbf7.19261523.png
             [fecha] => 2026-03-28 13:26:05
             */
+
+
         
             
            
             $records = $data_form['records'] ?? [];
+            $last_record = end($records);
+        
+            if (!empty($last_record['fecha'])) {
+                $timestamp = strtotime($last_record['fecha']);
+                if ($timestamp !== false) {
+                    $timestamp += 2 * 3600; // Sumar 2 horas en segundos
+                    $last_record['fecha'] = date('d/m/y H:i:s', $timestamp);
+                }
+            }
             if (empty($records)) {
                 echo '<p>No hi ha signatures.</p>';
             } else {
@@ -143,6 +154,7 @@ get_header();
                             📄 Crear PDF de signatures
                         </a>
                         <p style="margin-top: 15px; color: #000; font-size: 14px;">Total de signatures: ' . $data_form['total_entries'] . '</p>  
+                        <p style="margin-top: 15px; color: #000; font-size: 14px;">Darrera signatura: ' . ($last_record['fecha'] ?? '') . '</p> 
                     </div>
                 </div>';
                 
@@ -154,13 +166,15 @@ get_header();
                     $segonCognom = ucfirst(strtolower(trim($record['Segon Cognom'] ?? '')));
                     $dni = strtoupper(trim($record['Dni'] ?? ''));
                     $signatura = trim($record['Signatura'] ?? '');
-                    $fecha = trim($record['fecha'] ?? '');
+                    $fecha = trim($record['fecha'] ?? '');  //sumar 2 horas a la fecha original para mostrarla en la tabla
+
                     
                     // Formatear fecha a dd/mm/yy H:i:s
                     $fechaFormateada = '';
                     if (!empty($fecha)) {
                         $timestamp = strtotime($fecha);
                         if ($timestamp !== false) {
+                            $timestamp += 2 * 3600; // Sumar 2 horas en segundos
                             $fechaFormateada = date('d/m/y H:i:s', $timestamp);
                         }
                     }
