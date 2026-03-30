@@ -51,6 +51,10 @@ get_header();
     }
     
     /* Controles de DataTables */
+    .dataTables_filter {
+        margin-bottom: 20px;
+    }
+    
     .dataTables_filter input {
         border: 2px solid #D04840;
         border-radius: 4px;
