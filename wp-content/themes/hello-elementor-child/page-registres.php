@@ -8,14 +8,28 @@ get_header();
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
 <style>
+    .pagina-personalizada,
+    .pagina-personalizada .container,
+    .pagina-personalizada .contenido-personalizado {
+        min-width: 0;
+    }
+
     .signature-img {
         max-width: 100px;
         max-height: 35px;
     }
+
     #signaturesTable {
         margin-top: 30px;
         border-collapse: collapse !important;
+        table-layout: auto;
     }
+
+    #signaturesTable th,
+    #signaturesTable td {
+        white-space: nowrap;
+    }
+
     .dataTables_wrapper {
         padding: 20px;
         background: #fff;
@@ -100,6 +114,114 @@ get_header();
     .dataTables_wrapper .dataTables_length,
     .dataTables_wrapper .dataTables_filter {
         color: #333;
+    }
+
+    .signatures-table-wrapper {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .signatures-table-wrapper,
+    .signatures-table-scroll-top {
+        scrollbar-color: #b83d36 #f3d6d3;
+        scrollbar-width: thin;
+    }
+
+    .signatures-table-wrapper::-webkit-scrollbar,
+    .signatures-table-scroll-top::-webkit-scrollbar {
+        height: 10px;
+    }
+
+    .signatures-table-wrapper::-webkit-scrollbar-track,
+    .signatures-table-scroll-top::-webkit-scrollbar-track {
+        background: #f3d6d3;
+        border-radius: 999px;
+    }
+
+    .signatures-table-wrapper::-webkit-scrollbar-thumb,
+    .signatures-table-scroll-top::-webkit-scrollbar-thumb {
+        background: #b83d36;
+        border-radius: 999px;
+    }
+
+    .signatures-table-wrapper::-webkit-scrollbar-thumb:hover,
+    .signatures-table-scroll-top::-webkit-scrollbar-thumb:hover {
+        background: #a1332d;
+    }
+
+    .signatures-table-scroll-top {
+        display: none;
+        overflow-x: auto;
+        overflow-y: hidden;
+        margin-bottom: 8px;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .signatures-table-scroll-top-inner {
+        height: 1px;
+    }
+
+    @media (max-width: 767px) {
+        .signatures-table-scroll-top {
+            display: block;
+        }
+
+        .signatures-table-wrapper {
+            overflow-x: auto;
+            overflow-y: hidden;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .signatures-table-wrapper .dataTables_wrapper {
+            min-width: 720px;
+        }
+
+        #signaturesTable {
+            width: 720px !important;
+            min-width: 720px;
+        }
+
+        .dataTables_wrapper {
+            padding: 16px;
+        }
+
+        .dataTables_wrapper .dataTables_filter {
+            float: left;
+            text-align: left;
+            width: 100%;
+            margin-bottom: 12px;
+        }
+
+        .dataTables_wrapper .dataTables_filter label {
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            gap: 8px;
+            width: 100%;
+        }
+
+        .dataTables_wrapper .dataTables_length {
+            float: left !important;
+            text-align: left !important;
+            width: 100%;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: flex-start;
+        }
+
+        .dataTables_wrapper .dataTables_length label {
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            text-align: left !important;
+            width: 100%;
+            margin: 0;
+        }
+
+        .dataTables_wrapper .dataTables_length select {
+            margin-left: 8px;
+            margin-right: 0;
+        }
     }
 </style>
 
@@ -198,7 +320,7 @@ get_header();
                 <?php
                 
                 // Tabla de DataTables (vacía, se llenará con JavaScript)
-                echo '<table id="signaturesTable" class="display" style="width:100%">
+                echo '<div class="signatures-table-scroll-top"><div class="signatures-table-scroll-top-inner"></div></div><div class="signatures-table-wrapper"><table id="signaturesTable" class="display" style="width:100%">
                     <thead>
                         <tr>
                             <th>Nom</th>
@@ -211,7 +333,7 @@ get_header();
                     </thead>
                     <tbody>
                     </tbody>
-                </table>';
+                </table></div>';
                
             }
                         
@@ -224,7 +346,51 @@ get_header();
 <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
 <script>
 jQuery(document).ready(function($) {
-    $('#signaturesTable').DataTable({
+    var $table = $('#signaturesTable');
+    var $bottomScroll = $('.signatures-table-wrapper');
+    var $topScroll = $('.signatures-table-scroll-top');
+    var $topScrollInner = $('.signatures-table-scroll-top-inner');
+    var isSyncingTopScroll = false;
+    var isSyncingBottomScroll = false;
+
+    if (!$table.length) {
+        return;
+    }
+
+    function syncTopScrollbarWidth() {
+        var scrollWidth = $bottomScroll.get(0) ? $bottomScroll.get(0).scrollWidth : 0;
+        var clientWidth = $bottomScroll.get(0) ? $bottomScroll.get(0).clientWidth : 0;
+
+        $topScrollInner.width(scrollWidth);
+
+        if (scrollWidth > clientWidth) {
+            $topScroll.show();
+        } else {
+            $topScroll.hide();
+        }
+    }
+
+    $topScroll.on('scroll', function() {
+        if (isSyncingBottomScroll) {
+            return;
+        }
+
+        isSyncingTopScroll = true;
+        $bottomScroll.scrollLeft($topScroll.scrollLeft());
+        isSyncingTopScroll = false;
+    });
+
+    $bottomScroll.on('scroll', function() {
+        if (isSyncingTopScroll) {
+            return;
+        }
+
+        isSyncingBottomScroll = true;
+        $topScroll.scrollLeft($bottomScroll.scrollLeft());
+        isSyncingBottomScroll = false;
+    });
+
+    var dataTable = $table.DataTable({
         "data": signaturesData,
         "deferRender": true, // Renderizar solo cuando sea necesario
         "columns": [
@@ -250,8 +416,20 @@ jQuery(document).ready(function($) {
             "zeroRecords": "No s'han trobat resultats"
         },
         "order": [[5, "asc"]], // Ordenar por fecha ascendente
-        "pageLength": 25,
-        "responsive": true
+        "pageLength": 10,
+        "lengthMenu": [[10], [10]],
+        "responsive": false,
+        "initComplete": function() {
+            syncTopScrollbarWidth();
+        },
+        "drawCallback": function() {
+            syncTopScrollbarWidth();
+        }
+    });
+
+    $(window).on('load resize orientationchange', function() {
+        dataTable.columns.adjust();
+        syncTopScrollbarWidth();
     });
 });
 </script>
