@@ -388,7 +388,7 @@ get_header();
 
                 <?php if(!empty($array_estats)): ?>
                     <div id="stats-modal" class="stats-modal">
-                        <h2>Estasdístiques de signatures</h2>
+                        <h2>Estadístiques de signatures</h2>
                         <div class="stats-modal-list">
                             <?php foreach($array_estats as $dia => $total): ?>
                                 <div class="stats-modal-item">
