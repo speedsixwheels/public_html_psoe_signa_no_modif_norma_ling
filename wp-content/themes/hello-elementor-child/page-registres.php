@@ -381,14 +381,14 @@ get_header();
                         <p style="margin-top: 15px; color: #000; font-size: 14px;">Total de signatures: <?php echo $data_form['total_entries']; ?></p>  
                         <p style="margin-top: 15px; color: #000; font-size: 14px;">Darrera signatura: <?php echo $last_record['fecha'] ?? ''; ?></p> 
                         <?php if(!empty($array_estats)): ?>
-                            <a href="#stats-modal" data-fancybox class="stats-fancybox-trigger">Estadístiques de signatures per dia</a>
+                            <a href="#stats-modal" data-fancybox class="stats-fancybox-trigger">Estadístiques de signatures</a>
                         <?php endif; ?>
                     </div>
                 </div>
 
                 <?php if(!empty($array_estats)): ?>
                     <div id="stats-modal" class="stats-modal">
-                        <h2>Total de signatures de cada dia</h2>
+                        <h2>Estasdístiques de signatures</h2>
                         <div class="stats-modal-list">
                             <?php foreach($array_estats as $dia => $total): ?>
                                 <div class="stats-modal-item">
@@ -396,6 +396,10 @@ get_header();
                                     <strong><?php echo esc_html($total); ?></strong>
                                 </div>
                             <?php endforeach; ?>
+                            <div class="stats-modal-item" style="background: #ffe5e5; border-color: #D04840; font-weight: 600; margin-top: 8px;">
+                                <span>TOTAL</span>
+                                <strong style="font-size: 18px;"><?php echo esc_html(array_sum($array_estats)); ?></strong>
+                            </div>
                         </div>
                     </div>
                 <?php endif; ?>
