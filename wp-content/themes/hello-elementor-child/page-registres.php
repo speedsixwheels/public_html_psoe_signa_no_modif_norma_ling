@@ -7,6 +7,7 @@ get_header();
 
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.css">
 <style>
     .pagina-personalizada,
     .pagina-personalizada .container,
@@ -17,6 +18,61 @@ get_header();
     .signature-img {
         max-width: 100px;
         max-height: 35px;
+    }
+
+    .stats-fancybox-trigger {
+        display: inline-block;
+        margin-top: 12px;
+        background-color: #ffffff;
+        color: #D04840;
+        border: 2px solid #D04840;
+        padding: 12px 24px;
+        text-decoration: none;
+        border-radius: 5px;
+        font-weight: 700;
+        transition: all 0.3s ease;
+    }
+
+    .stats-fancybox-trigger:hover {
+        background-color: #D04840;
+        color: #ffffff;
+    }
+
+    .stats-modal {
+        display: none;
+        max-width: 520px;
+        width: calc(100vw - 32px);
+        padding: 24px;
+        border-radius: 12px;
+    }
+
+    .stats-modal h2 {
+        margin: 0 0 20px;
+        text-align: center;
+        color: #D04840;
+        font-size: 24px;
+    }
+
+    .stats-modal-list {
+        display: grid;
+        gap: 10px;
+    }
+
+    .stats-modal-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        padding: 12px 16px;
+        background: #fef5f5;
+        border: 1px solid #f3d6d3;
+        border-radius: 8px;
+        color: #333;
+        font-size: 14px;
+    }
+
+    .stats-modal-item strong {
+        color: #D04840;
     }
 
     #signaturesTable {
@@ -268,19 +324,10 @@ get_header();
             }
             if (empty($records)) {
                 echo '<p>No hi ha signatures.</p>';
-            } else {
-                // Botón para descargar PDF centrado
-                echo '<div style="display: flex; justify-content: center; align-items: center; margin: 40px auto; max-width: 600px; text-align: center;">
-                    <div>
-                        <a target="_blank" href="/wp-content/themes/hello-elementor-child/generar-pdf/"  style="display: inline-block; background-color: #D04840; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; transition: background-color 0.3s; box-shadow: 0 2px 8px rgba(208, 72, 132, 0.3);">
-                            📄 Crear PDF de signatures
-                        </a>
-                        <p style="margin-top: 15px; color: #000; font-size: 14px;">Total de signatures: ' . $data_form['total_entries'] . '</p>  
-                        <p style="margin-top: 15px; color: #000; font-size: 14px;">Darrera signatura: ' . ($last_record['fecha'] ?? '') . '</p> 
-                    </div>
-                </div>';
+            } 
                 
                 // Preparar datos para DataTables
+                $array_estats = array();
                 $tableData = [];
                 foreach ($records as $record) {
                     $nom = ucfirst(mb_strtolower(trim($record['nom'] ?? '')));
@@ -290,13 +337,19 @@ get_header();
                     $signatura = trim($record['Signatura'] ?? '');
                     $fecha = trim($record['fecha'] ?? '');  //sumar 2 horas a la fecha original para mostrarla en la tabla
 
-                    
                     // Formatear fecha a dd/mm/yy H:i:s
                     $fechaFormateada = '';
                     if (!empty($fecha)) {
                         $timestamp = strtotime($fecha);
                         if ($timestamp !== false) {
                             $timestamp += 2 * 3600; // Sumar 2 horas en segundos
+                            $fechaDia = date('d/m/Y', $timestamp);
+
+                            if (!isset($array_estats[$fechaDia])) {
+                                $array_estats[$fechaDia] = 0;
+                            }
+
+                            $array_estats[$fechaDia]++;
                             $fechaFormateada = date('d/m/y H:i:s', $timestamp);
                         }
                     }
@@ -313,11 +366,50 @@ get_header();
                         'fecha' => $fechaFormateada
                     ];
                 }
+
+                ksort($array_estats);
                 ?>
+
+
+        <?php if(!empty($records)): ?>
+               
+                <div style="display: flex; justify-content: center; align-items: center; margin: 40px auto; max-width: 600px; text-align: center;">
+                    <div>
+                        <a target="_blank" href="/wp-content/themes/hello-elementor-child/generar-pdf/"  style="display: inline-block; background-color: #D04840; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; transition: background-color 0.3s; box-shadow: 0 2px 8px rgba(208, 72, 132, 0.3);">
+                            📄 Crear PDF de signatures
+                        </a>
+                        <p style="margin-top: 15px; color: #000; font-size: 14px;">Total de signatures: <?php echo $data_form['total_entries']; ?></p>  
+                        <p style="margin-top: 15px; color: #000; font-size: 14px;">Darrera signatura: <?php echo $last_record['fecha'] ?? ''; ?></p> 
+                        <?php if(!empty($array_estats)): ?>
+                            <a href="#stats-modal" data-fancybox class="stats-fancybox-trigger">Estadístiques de signatures per dia</a>
+                        <?php endif; ?>
+                    </div>
+                </div>
+
+                <?php if(!empty($array_estats)): ?>
+                    <div id="stats-modal" class="stats-modal">
+                        <h2>Total de signatures de cada dia</h2>
+                        <div class="stats-modal-list">
+                            <?php foreach($array_estats as $dia => $total): ?>
+                                <div class="stats-modal-item">
+                                    <span><?php echo esc_html($dia); ?></span>
+                                    <strong><?php echo esc_html($total); ?></strong>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
+                <?php endif; ?>
+
+                <?php endif; ?>
+
+
+        
                 <script>
                     var signaturesData = <?php echo json_encode($tableData); ?>;
                 </script>
                 <?php
+
+                
                 
                 // Tabla de DataTables (vacía, se llenará con JavaScript)
                 echo '<div class="signatures-table-scroll-top"><div class="signatures-table-scroll-top-inner"></div></div><div class="signatures-table-wrapper"><table id="signaturesTable" class="display" style="width:100%">
@@ -335,7 +427,7 @@ get_header();
                     </tbody>
                 </table></div>';
                
-            }
+            
                         
             ?>
         </div>
@@ -344,6 +436,7 @@ get_header();
 
 <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.umd.js"></script>
 <script>
 jQuery(document).ready(function($) {
     var $table = $('#signaturesTable');
@@ -431,6 +524,12 @@ jQuery(document).ready(function($) {
         dataTable.columns.adjust();
         syncTopScrollbarWidth();
     });
+
+    if (typeof Fancybox !== 'undefined') {
+        Fancybox.bind('[data-fancybox]', {
+            dragToClose: false
+        });
+    }
 });
 </script>
 
