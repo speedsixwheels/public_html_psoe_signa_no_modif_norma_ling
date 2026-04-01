@@ -367,7 +367,16 @@ get_header();
                     ];
                 }
 
-                ksort($array_estats);
+                uksort($array_estats, static function ($fechaA, $fechaB) {
+                    $dateA = DateTime::createFromFormat('d/m/Y', $fechaA);
+                    $dateB = DateTime::createFromFormat('d/m/Y', $fechaB);
+
+                    if (!$dateA || !$dateB) {
+                        return strcmp($fechaB, $fechaA);
+                    }
+
+                    return $dateB->getTimestamp() <=> $dateA->getTimestamp();
+                });
                 ?>
 
 
