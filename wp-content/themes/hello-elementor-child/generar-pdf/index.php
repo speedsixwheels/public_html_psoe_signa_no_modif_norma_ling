@@ -1,9 +1,22 @@
 <?php
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
+define('DONOTCACHEPAGE', true);
+define('DONOTCACHEOBJECT', true);
+define('DONOTCACHEDB', true);
 
 require_once '/home/u937561055/domains/psoevinaros.com/public_html/signa.psoevinaros.com/wp-load.php';
 require_once ABSPATH . 'wp-content/themes/hello-elementor-child/assets/fpdf/fpdf.php';
+
+if (!is_user_logged_in()) {
+    nocache_headers();
+    wp_die('Debes iniciar sesión para acceder a esta página.', 'Acceso restringido', array('response' => 403));
+}
+
+nocache_headers();
+header('Cache-Control: private, no-store, no-cache, must-revalidate, max-age=0');
+header('Pragma: no-cache');
+header('Expires: Wed, 11 Jan 1984 05:00:00 GMT');
+header('Surrogate-Control: no-store');
+header('X-Accel-Expires: 0');
 
 $url = 'https://signa.psoevinaros.com/api/get-data/form/';
 $post_fields = [
@@ -248,5 +261,11 @@ if (!empty($signature_errors)) {
 }
 
 $filename = 'recollida_firmes_' . date('Y-m-d_His') . '.pdf';
+
+while (ob_get_level() > 0) {
+    ob_end_clean();
+}
+
+$pdf->SetTitle(pdf_text('Recollida de firmes'));
 $pdf->Output('I', $filename);
 exit;
