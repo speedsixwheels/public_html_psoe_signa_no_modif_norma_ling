@@ -42,6 +42,8 @@ get_header();
         display: none;
         max-width: 520px;
         width: calc(100vw - 32px);
+        max-height: calc(100vh - 32px);
+        overflow-y: auto;
         padding: 24px;
         border-radius: 12px;
     }
@@ -66,7 +68,7 @@ get_header();
         padding: 12px 16px;
         background: #fef5f5;
         border: 1px solid #f3d6d3;
-        border-radius: 8px;
+        border-radius: 8px;  
         color: #333;
         font-size: 14px;
     }
