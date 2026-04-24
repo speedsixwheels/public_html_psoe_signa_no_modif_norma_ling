@@ -39,11 +39,20 @@ $logo_path = ABSPATH . 'wp-content/uploads/2026/03/logo_psoevinaros_red_180x.png
 $logo_path_2 = ABSPATH . 'wp-content/uploads/2026/03/logo_compromis.png'; 
 $total_firmas = count($records);
 
+
+
 class MiPDF extends FPDF
 {
     public $logo_path;
     public $logo_path_2;
     public $total_firmas = 0;
+    public $generate_plantilla;
+
+
+
+    function set_generate_plantilla($value){
+        $this->generate_plantilla = (bool)$value;
+    }
 
     function Header()
     {
@@ -79,7 +88,7 @@ class MiPDF extends FPDF
         $this->Cell(0, 6, pdf_text('Recollida de firmes ciutadanes · PSPV Vinaròs - Compromís'), 0, 1, 'C');
 
         // Solo en la primera página: total de firmas
-        if ($this->PageNo() == 1) {
+        if ($this->PageNo() == 1 && !$this->generate_plantilla) {
             $this->Ln(2);
             $this->SetFont('Arial', 'B', 11);
             $this->SetTextColor(70, 70, 70);
@@ -137,6 +146,12 @@ class MiPDF extends FPDF
 }
 
 $pdf = new MiPDF('P', 'mm', 'A4');
+$generate_plantilla = false;
+if($generate_plantilla){
+    $pdf->set_generate_plantilla(true);
+}
+
+
 $pdf->AliasNbPages();
 $pdf->logo_path = $logo_path;
 $pdf->logo_path_2 = $logo_path_2;
@@ -153,6 +168,7 @@ $rowHeight = 11.5;
 $num = 0;
 $signature_errors = [];
 
+
 foreach ($records as $record) {
     $num++;
 
@@ -160,6 +176,13 @@ foreach ($records as $record) {
     $cognoms         = trim(ucfirst(mb_strtolower($record['Primer Cognom'] ?? '')) . ' ' . ucfirst(mb_strtolower($record['Segon Cognom'] ?? '')));
     $dni             = strtoupper(trim($record['Dni'] ?? ''));
     $signature_value = trim($record['Signatura'] ?? '');
+
+    if($generate_plantilla){
+        unset($nom);
+        unset($cognoms);
+        unset($dni);
+        unset($signature_value);
+    }
 
     $signature_img = '';
     if (!empty($signature_value)) {
@@ -175,6 +198,8 @@ foreach ($records as $record) {
     }
 
     $pdf->SetX($x);
+
+ 
 
     $pdf->Cell(12, $rowHeight, $num, 1, 0, 'C');
     $pdf->Cell(38, $rowHeight, pdf_text($nom), 1, 0, 'L');
